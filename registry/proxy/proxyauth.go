@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/docker/distribution/context"
+	// "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 )
@@ -18,11 +18,11 @@ type userpass struct {
 }
 
 type credentials struct {
-	creds map[string]userpass
+	creds userpass
 }
 
 func (c credentials) Basic(u *url.URL) (string, string) {
-	up := c.creds[u.String()]
+	up := c.creds
 
 	return up.username, up.password
 }
@@ -36,20 +36,26 @@ func (c credentials) SetRefreshToken(u *url.URL, service, token string) {
 
 // configureAuth stores credentials for challenge responses
 func configureAuth(username, password, remoteURL string) (auth.CredentialStore, error) {
-	creds := map[string]userpass{}
+	// creds := userpass{}
 
-	authURLs, err := getAuthURLs(remoteURL)
-	if err != nil {
-		return nil, err
+	// include credentials for basic auth
+	creds := userpass{
+		username: username,
+		password: password,
 	}
 
-	for _, url := range authURLs {
-		context.GetLogger(context.Background()).Infof("Discovered token authentication URL: %s", url)
-		creds[url] = userpass{
-			username: username,
-			password: password,
-		}
-	}
+	// authURLs, err := getAuthURLs(remoteURL)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// for _, url := range authURLs {
+	// 	context.GetLogger(context.Background()).Infof("Discovered token authentication URL: %s", url)
+	// 	creds[url] = userpass{
+	// 		username: username,
+	// 		password: password,
+	// 	}
+	// }
 
 	return credentials{creds: creds}, nil
 }
